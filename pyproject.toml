@@ -48,3 +48,8 @@ pythonpath = ["src"]
 dev = [
     "pytest>=8.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
