@@ -18,12 +18,19 @@ ASK SEQUENCE (one prompt at a time; user may answer "skip" to any):
    "Any Confluence page(s) for `<cap.name>`? Paste URLs or page IDs, or 'skip'."
    - Fetch each via the Confluence MCP. Collect page body.
 
-3. **Arbitrary URLs** (always — relies on host's WebFetch):
-   "Any other docs to consult (PR threads, design pages, RFCs)? Paste URL(s) or 'skip'."
-   - For each URL, use the host's WebFetch tool. Collect rendered body text.
+3. **External context** — either MERGED or SPLIT depending on host:
 
-4. **Hand-pasted text** (always):
-   "Anything else I should know about `<cap.name>`? Paste text or 'skip'."
+   **If at least one of Jira/Confluence MCP is present** (split form):
+   - 3a. URLs: "Any other docs to consult (PR threads, design pages, RFCs)? Paste URL(s) or 'skip'."
+   - 3b. Hand-pasted: "Anything else I should know about `<cap.name>`? Paste text or 'skip'."
+
+   **If NEITHER Jira nor Confluence MCP is present** (merged form — recommended in this case):
+   - 3. "Any external context to add for `<cap.name>`? Paste URL(s), notes, or 'skip'."
+   - Parse the reply: any `https?://...` matches are URLs (fetch each via the host's WebFetch); the remaining text is treated as freeform notes. If the reply is exactly `skip` (case-insensitive), treat both as empty.
+
+   Rationale: when there are no ticketing/wiki tools to interrogate, the
+   common case is "nothing to add". A single prompt collapses 2 turns of
+   "skip" into 1 without losing any capability.
 
 Collect everything into a `cap.external_context` dict:
 ```json

@@ -29,6 +29,9 @@ ASK RULES (mandatory):
 ACCEPT RESPONSES:
 
 - A concrete answer → pass to `rewrite_requirement.md`.
+- For multiple-choice questions, accept `(a)` / `(b)` / `(c)` / `(d)` / ...
+  OR `1` / `2` / `3` / `4` / ... — both forms map to the same option by
+  position. Also accept the full option text quoted back.
 - "TBD" / "I don't know" / "skip" → downgrade marker from `[GAP]` to `[TBD]`
   in-place; do not rewrite the Requirement; move to next marker.
 - "stop" / "enough" / "done" → exit the loop with whatever's still unresolved.
