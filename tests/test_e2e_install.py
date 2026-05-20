@@ -19,16 +19,28 @@ def test_install_into_flask_demo(flask_demo_copy: Path):
     p = get_platform("claude-code")
     install_platform(flask_demo_copy, p)
 
-    skill = flask_demo_copy / p.skills_path / "inferspec-scan" / "SKILL.md"
-    spec_template = flask_demo_copy / p.skills_path / "inferspec-scan" / "spec_template.md"
-    classify_prompt = flask_demo_copy / p.skills_path / "inferspec-scan" / "prompts" / "classify_capabilities.md"
-    draft_prompt = flask_demo_copy / p.skills_path / "inferspec-scan" / "prompts" / "draft_spec.md"
-    config = flask_demo_copy / p.config_file
+    # inferspec-scan
+    scan_root = flask_demo_copy / p.skills_path / "inferspec-scan"
+    assert (scan_root / "SKILL.md").exists()
+    assert (scan_root / "spec_template.md").exists()
+    assert (scan_root / "prompts" / "classify_capabilities.md").exists()
+    assert (scan_root / "prompts" / "draft_spec.md").exists()
 
-    assert skill.exists()
-    assert spec_template.exists()
-    assert classify_prompt.exists()
-    assert draft_prompt.exists()
+    # inferspec-cap (NEW)
+    cap_root = flask_demo_copy / p.skills_path / "inferspec-cap"
+    assert (cap_root / "SKILL.md").exists()
+    assert (cap_root / "spec_template.md").exists()
+    for prompt_name in (
+        "resolve_cap.md",
+        "solicit_sources.md",
+        "ask_gap.md",
+        "rewrite_requirement.md",
+        "batch_detect.md",
+    ):
+        assert (cap_root / "prompts" / prompt_name).exists()
+
+    # Managed block in config
+    config = flask_demo_copy / p.config_file
     assert config.exists()
 
 
