@@ -250,16 +250,21 @@ v0.2 ships when:
 
 ---
 
-## 9. Open questions (to resolve during planning)
+## 9. Resolved decisions
 
-- **Q1**: Should `/inferspec-cap` write directly to `spec.md` or to a staging
-  file (`spec.md.next`)? Direct write is simpler but loses the "preview before
-  apply" affordance.
-- **Q2**: For batch-resolvable gaps, what's the UX? A single explicit prompt
-  ("I see this same ambiguity in 3 capabilities — answer once for all?") or
-  silently propagate?
-- **Q3**: Should the skill commit on exit if all gaps are resolved? Parent
-  design says no (user commits), but cap mode is more deliberate and a one-line
-  auto-commit might be welcome.
-
-These get pinned down in the implementation plan.
+- **Q1 — Write target: direct to `spec.md`.** No `.next` / `.bak` staging.
+  Single source of truth. Per-answer preview is the 2-line diff summary shown
+  in step 4f of the loop; the escape hatch is `git checkout -- spec.md`.
+- **Q2 — Batch resolve: single explicit prompt, LLM-driven conservative
+  grouping.** When the skill detects that several `[GAP]` markers share a
+  semantic theme (e.g., "auth requirement" across multiple Requirements), it
+  proposes a batch: lists every marker it would include and asks the user
+  to confirm before answering once. If the user declines, fall back to
+  per-marker iteration. Grouping logic is LLM judgement, not pattern matching —
+  the skill prefers to MISS a batch than to wrongly bundle unrelated gaps.
+- **Q3 — End-of-session commit prompt.** When the loop exits (queue empty or
+  user-stopped), ask once: "Commit these spec changes? (y/n)". On yes, run
+  `git add openspec/specs/<slug>/spec.md && git commit -m "spec: refine <slug>
+  via /inferspec-cap"`. On no, leave the working tree dirty for the user.
+  Commit message template is fixed; users wanting a custom message answer "no"
+  and commit manually.
