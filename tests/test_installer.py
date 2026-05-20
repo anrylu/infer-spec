@@ -62,3 +62,29 @@ def test_installed_skill_has_required_files(tmp_path: Path):
     assert "name: inferspec-scan" in skill_text
     assert "OpenSpec" in skill_text
     assert "graphify" in skill_text
+
+
+def test_installed_cap_skill_has_required_files(tmp_path: Path):
+    p = get_platform("claude-code")
+    install_platform(tmp_path, p)
+    skill_root = tmp_path / p.skills_path / "inferspec-cap"
+
+    # Top-level files
+    assert (skill_root / "SKILL.md").exists()
+    assert (skill_root / "spec_template.md").exists()
+
+    # All 5 prompt files
+    prompts_dir = skill_root / "prompts"
+    for name in (
+        "resolve_cap.md",
+        "solicit_sources.md",
+        "ask_gap.md",
+        "rewrite_requirement.md",
+        "batch_detect.md",
+    ):
+        assert (prompts_dir / name).exists(), f"missing {name}"
+
+    skill_text = (skill_root / "SKILL.md").read_text()
+    assert "name: inferspec-cap" in skill_text
+    assert "[GAP]" in skill_text
+    assert "commit" in skill_text.lower()
