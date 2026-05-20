@@ -14,7 +14,7 @@ skills) to fill the gaps interactively.
 
 Each `openspec/specs/<cap>/spec.md` has two H2 sections — `## Purpose` and
 `## Requirements`. Requirements use RFC 2119 keywords (MUST / SHALL / SHOULD /
-MAY) and carry `**Source:**` citations. Same convention as `llm-wiki-scan`.
+MAY) and carry `**Source:**` citations.
 
 ## Usage
 

@@ -3,23 +3,19 @@
 **Status:** Draft for v0.1 MVP
 **Date:** 2026-05-20
 **Author:** anrylu
-**References:** `~/Documents/workspace/soul-forge`, `~/Documents/workspace/llm-wiki/skills/llm-wiki-scan`
+**References:** `~/Documents/workspace/soul-forge`
 
 ---
 
 ## 1. Positioning
 
-InferSpec is an open-source tool that **reverse-infers structured specs from existing codebases and surrounding artefacts** (git history, local docs, optionally Jira/Confluence via MCP, optionally URLs via host AI's WebFetch). It outputs OpenSpec-format Markdown (`openspec/specs/<cap>/spec.md`), the same convention used by `llm-wiki-scan`.
+InferSpec is an open-source tool that **reverse-infers structured specs from existing codebases and surrounding artefacts** (git history, local docs, optionally Jira/Confluence via MCP, optionally URLs via host AI's WebFetch). It outputs OpenSpec-format Markdown (`openspec/specs/<cap>/spec.md`).
 
-### Differentiation vs related tools
+### Differentiation
 
-| Tool | Scope | Sources | Interactive |
-|---|---|---|---|
-| `llm-wiki-scan` (internal) | Bulk scan whole repo | Code + local design docs | No (batch) |
-| `Speculate` (academic) | REST API spec only | Static analysis + LLM | No |
-| **InferSpec** | Bulk + per-cap + incremental | Code + git history + local docs + **MCP-detected Jira/Confluence** + **WebFetch via host AI** | Yes (Q&A loop) |
-
-Both InferSpec and `llm-wiki-scan` write the same OpenSpec format, so they are complementary — use InferSpec for deep per-capability inference with user Q&A; use `llm-wiki-scan` for one-shot bulk seeding.
+- **Bulk + per-cap + incremental** modes — onboard a new repo or deep-dive a single capability
+- **Multi-source context** — code + git history + local docs + MCP-detected Jira/Confluence + WebFetch via host AI
+- **Interactive Q&A loop** — the skill asks targeted questions when ambiguity is detected, instead of producing static drafts only
 
 ### Tagline
 
@@ -132,7 +128,7 @@ Adding a new source = adding a "if tool available, do X" branch in the prompt. N
 
 ## 3. Data flow & OpenSpec alignment
 
-### 3.1 OpenSpec convention (identical to llm-wiki-scan)
+### 3.1 OpenSpec convention
 
 Each `openspec/specs/<cap>/spec.md` has exactly two H2 sections:
 
@@ -205,7 +201,7 @@ for each marker: run Q&A loop (same as Mode B)
 rewrite spec.md
 ```
 
-### 3.3 Git history (the InferSpec value-add over llm-wiki-scan)
+### 3.3 Git history (a core InferSpec value-add)
 
 For each cap's file list:
 
@@ -257,7 +253,7 @@ mcp_overrides:
   jira: false                 # disable detected MCP even if present
 ```
 
-`.inferspec.yaml` coexists with `.llm-wiki.yaml` — different files, different responsibilities.
+`.inferspec.yaml` is scoped to InferSpec and does not conflict with other tools' config files.
 
 ---
 
@@ -334,7 +330,7 @@ Weeks 1+2 can run in parallel. Weeks 4–5 are strongly coupled, do in sequence.
 
 **Verdict: use it.**
 
-`graphify` (PyPI: `graphifyy`) already does the AST → cluster → JSON pipeline that `llm-wiki-scan` relies on. For a legacy-codebase tool whose value depends on grouping unfamiliar files into meaningful capabilities, this is the most expensive piece to reinvent.
+`graphify` (PyPI: `graphifyy`) already does the AST → cluster → JSON pipeline that legacy-codebase analysis depends on. For a tool whose value rests on grouping unfamiliar files into meaningful capabilities, this is the most expensive piece to reinvent.
 
 What InferSpec adds on top of graphify:
 - A **multi-source context linker** that maps non-code artefacts (commit messages, Jira tickets, docs) onto the graph's nodes
@@ -349,14 +345,13 @@ The graph itself stays as graphify's output. InferSpec is the orchestration + re
 
 - ✅ Form factor: uvx installer + per-platform skills (no own LLM API, lean on host subscription)
 - ✅ Sources for MVP: local only (code, git, docs); external sources via MCP detection + host WebFetch
-- ✅ Output format: OpenSpec, identical convention to `llm-wiki-scan`
+- ✅ Output format: OpenSpec
 - ✅ Q&A model: skill actively asks during inference; user can also correct anytime
 
 ---
 
 ## 8. Non-goals (to prevent scope creep)
 
-- Not a replacement for `llm-wiki-scan` — they share format and can co-exist
 - Not a continuous-integration / drift-detection product (yet)
 - Not opinionated about how teams version their specs
 - Not building a hosted service

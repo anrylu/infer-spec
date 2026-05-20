@@ -1,3 +1,5 @@
+[English](/README.md) | [繁體中文](/README.zh-tw.md) | [简体中文](/README.zh-cn.md) | [日本語](/README.ja.md)
+
 # InferSpec
 
 **Reverse-infer OpenSpec specs from your codebase + git history + docs** —
@@ -83,16 +85,6 @@ The system SHALL reject login attempts after 5 failures within 60 seconds.
 - **WHEN** another POST /auth/login arrives
 - **THEN** server returns 429
 ```
-
-## Relationship to llm-wiki-scan
-
-InferSpec writes the same OpenSpec format as `llm-wiki-scan`. The two are
-complementary:
-
-| Tool | Best for |
-|---|---|
-| `llm-wiki-scan` | Bulk seed an entire repo, code-only context |
-| InferSpec | Per-capability deep dives with multi-source context + Q&A |
 
 ## Status
 

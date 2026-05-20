@@ -931,7 +931,7 @@ skills) to fill the gaps interactively.
 
 Each `openspec/specs/<cap>/spec.md` has two H2 sections — `## Purpose` and
 `## Requirements`. Requirements use RFC 2119 keywords (MUST / SHALL / SHOULD /
-MAY) and carry `**Source:**` citations. Same convention as `llm-wiki-scan`.
+MAY) and carry `**Source:**` citations.
 
 ## Usage
 
@@ -1455,16 +1455,6 @@ The system SHALL reject login attempts after 5 failures within 60 seconds.
 - **WHEN** another POST /auth/login arrives
 - **THEN** server returns 429
 ```
-
-## Relationship to llm-wiki-scan
-
-InferSpec writes the same OpenSpec format as `llm-wiki-scan`. The two are
-complementary:
-
-| Tool | Best for |
-|---|---|
-| `llm-wiki-scan` | Bulk seed an entire repo, code-only context |
-| InferSpec | Per-capability deep dives with multi-source context + Q&A |
 
 ## Status
 
