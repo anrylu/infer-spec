@@ -33,6 +33,11 @@ The system SHALL/MUST/SHOULD <observable behaviour>.
 - **WHEN** <trigger>
 - **THEN** <observable outcome>
 
+`AND` and `BUT` lines are allowed after `GIVEN`/`WHEN`/`THEN` ONLY to express
+side-effects of the same trigger (e.g., a state mutation observable from outside
+that happens together with the return code). A separately observable behaviour
+deserves its own Scenario, not an `AND`. Default to 3 lines.
+
 <!-- Mark inferred-but-unverified values with [GAP] inside an HTML comment
      at end of the affected scenario line, e.g.:
      - **THEN** server returns 429  <!-- [GAP: rate limit value inferred] -->
@@ -46,7 +51,9 @@ RULES:
 - Use RFC 2119 keywords MUST / SHALL / SHOULD / MAY.
 - Every Requirement gets a `**Source:**` line citing file:line and/or ticket IDs.
 - Mark ambiguity with `<!-- [GAP: <reason>] -->`. Don't invent values.
-- One Scenario per distinct case (GIVEN/WHEN/THEN form).
+- One Scenario per distinct case (GIVEN/WHEN/THEN form). Each Scenario must make
+  exactly one externally-observable claim; sibling Scenarios in the same
+  Requirement must not be implied by one another.
 - Don't repeat code in the spec — describe behaviour observable from outside.
 - Don't write Requirements for purely internal helpers — those belong to whatever
   external-facing Requirement uses them.
