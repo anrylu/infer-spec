@@ -47,3 +47,18 @@ def test_install_preserves_existing_config(tmp_path: Path):
     assert "Existing content" in text
     assert "User custom notes." in text
     assert START_MARKER in text
+
+
+def test_installed_skill_has_required_files(tmp_path: Path):
+    p = get_platform("claude-code")
+    install_platform(tmp_path, p)
+    skill_root = tmp_path / p.skills_path / "inferspec-scan"
+    assert (skill_root / "SKILL.md").exists()
+    assert (skill_root / "spec_template.md").exists()
+    assert (skill_root / "prompts" / "classify_capabilities.md").exists()
+    assert (skill_root / "prompts" / "draft_spec.md").exists()
+
+    skill_text = (skill_root / "SKILL.md").read_text()
+    assert "name: inferspec-scan" in skill_text
+    assert "OpenSpec" in skill_text
+    assert "graphify" in skill_text
