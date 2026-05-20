@@ -49,16 +49,31 @@ See `inferspec platforms` for the full list.
 
 ## Usage
 
-Open your AI agent in the target repo and run:
+Open your AI agent in the target repo. Two skills are available:
+
+**`/inferspec-scan`** — bulk-infer specs for every capability:
 
 ```
 /inferspec-scan
 ```
 
-The skill:
-1. Runs `graphify` to cluster files into capabilities
-2. For each capability, reads code + `git log` + `docs/` + (if available) Jira/Confluence via MCP + URLs via the host's WebFetch
-3. Drafts `openspec/specs/<cap>/spec.md` in OpenSpec format
+It runs `graphify` to cluster files into capabilities, then for each cap reads
+code + `git log` + `docs/` + (if available) Jira/Confluence via MCP + URLs via
+the host's WebFetch, and drafts `openspec/specs/<cap>/spec.md` in OpenSpec
+format. Drafts may contain `[GAP]` / `[TBD]` markers where the AI was unsure.
+
+**`/inferspec-cap <slug>`** — single-capability deep dive with interactive Q&A:
+
+```
+/inferspec-cap user-auth
+/inferspec-cap "rate limiting"       # fuzzy match
+/inferspec-cap                       # interactive picker
+/inferspec-cap new-feature --new     # bootstrap a brand-new cap
+```
+
+For one capability, the skill solicits Jira/Confluence/URLs you have, then
+asks one focused question per `[GAP]` marker until the spec converges. On
+exit it offers to commit the result for you.
 
 Multi-source artefacts are picked up automatically — InferSpec detects MCP
 servers in your host environment rather than shipping its own clients.
@@ -88,8 +103,9 @@ The system SHALL reject login attempts after 5 failures within 60 seconds.
 
 ## Status
 
-**v0.1 alpha.** This release ships `/inferspec-scan` (bulk mode). The
-interactive `/inferspec-cap` and `/inferspec-refine` skills land in v0.2.
+**v0.2 alpha.** Ships `/inferspec-scan` (bulk mode) + `/inferspec-cap`
+(interactive single-cap mode). `/inferspec-refine` is under evaluation for
+v0.3.
 
 ## License
 

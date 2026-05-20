@@ -43,18 +43,34 @@ uvx inferspec init --platform claude-code
 
 ## 使い方
 
-対象 repo で AI agent を開き、次を実行：
+対象 repo で AI agent を開く。2 つの skill が利用可能：
+
+**`/inferspec-scan`** — bulk モード、全 capability の spec を一括推論：
 
 ```
 /inferspec-scan
 ```
 
-この skill は：
-1. `graphify` を実行してファイルを capability にクラスタリング
-2. 各 capability ごとに code + `git log` + `docs/` + (利用可能なら) MCP 経由の Jira/Confluence + host の WebFetch 経由の URL を読む
-3. OpenSpec 形式で `openspec/specs/<cap>/spec.md` を生成
+`graphify` でファイルを capability にクラスタリングし、各 cap ごとに code +
+`git log` + `docs/` + (利用可能なら) MCP 経由の Jira/Confluence + host の
+WebFetch 経由の URL を読み、OpenSpec 形式で `openspec/specs/<cap>/spec.md` を
+生成。AI が不確実な箇所は `[GAP]` / `[TBD]` でマーク。
 
-外部データソース（Jira、Confluence、URL）は自動的に処理されます — InferSpec は host 環境の MCP server を検出するため、自前の client を持ちません。
+**`/inferspec-cap <slug>`** — 単一 cap の深掘り + インタラクティブ Q&A：
+
+```
+/inferspec-cap user-auth
+/inferspec-cap "rate limiting"       # ファジーマッチ
+/inferspec-cap                       # インタラクティブ選択
+/inferspec-cap new-feature --new     # 新規 cap bootstrap
+```
+
+単一 cap について、skill が Jira/Confluence/URL を能動的に尋ね、各 `[GAP]`
+マーカーに対し焦点を絞った質問を spec が収束するまで 1 つずつ提示。終了時に
+コミット要否を確認。
+
+外部データソース（Jira、Confluence、URL）は自動処理 — InferSpec は host 環境
+の MCP server を検出するため、独自 client は持たない。
 
 ## 出力フォーマット
 
@@ -81,7 +97,8 @@ AUTH-456 参照。
 
 ## ステータス
 
-**v0.1 alpha**。このリリースは `/inferspec-scan`（bulk モード）を提供します。インタラクティブな `/inferspec-cap` と `/inferspec-refine` は v0.2 で提供予定です。
+**v0.2 alpha**。`/inferspec-scan`（bulk モード）+ `/inferspec-cap`
+（インタラクティブ単一 cap モード）を提供。`/inferspec-refine` は v0.3 で評価。
 
 ## License
 

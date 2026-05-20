@@ -43,18 +43,32 @@ uvx inferspec init --platform claude-code
 
 ## 使用方式
 
-在目標 repo 開啟你的 AI agent，執行：
+在目標 repo 開啟你的 AI agent。提供兩個 skill：
+
+**`/inferspec-scan`** — bulk 模式，一次推所有 capability 的 spec：
 
 ```
 /inferspec-scan
 ```
 
-這個 skill 會：
-1. 跑 `graphify` 把檔案分群成 capabilities
-2. 對每個 capability，讀取 code + `git log` + `docs/` + (若有的話) 透過 MCP 的 Jira/Confluence + 透過 host 的 WebFetch 抓 URL
-3. 用 OpenSpec 格式產出 `openspec/specs/<cap>/spec.md`
+執行 `graphify` 將檔案分群成 capability，對每個 cap 讀取 code + `git log` +
+`docs/` + (若可用) MCP 的 Jira/Confluence + host WebFetch 的 URL，產出 OpenSpec
+格式的 `openspec/specs/<cap>/spec.md`。AI 不確定的部分會標 `[GAP]` / `[TBD]`。
 
-外部資料來源（Jira、Confluence、URL）會自動處理 — InferSpec 偵測你 host 環境裡的 MCP server，不自己維護 client。
+**`/inferspec-cap <slug>`** — 單一 cap 深推 + 互動式 Q&A：
+
+```
+/inferspec-cap user-auth
+/inferspec-cap "rate limiting"       # 模糊匹配
+/inferspec-cap                       # 互動式選擇
+/inferspec-cap new-feature --new     # 新 cap bootstrap
+```
+
+對單一 cap，skill 會主動詢問你有沒有 Jira/Confluence/URL，然後針對每個 `[GAP]`
+marker 問一個聚焦問題直到 spec 收斂。結束時會問你要不要直接 commit。
+
+外部資料來源（Jira、Confluence、URL）會自動處理 — InferSpec 偵測你 host 環境
+裡的 MCP server，不自己維護 client。
 
 ## 輸出格式
 
@@ -81,7 +95,8 @@ uvx inferspec init --platform claude-code
 
 ## 狀態
 
-**v0.1 alpha**。這版本提供 `/inferspec-scan`（bulk 模式）。互動式的 `/inferspec-cap` 跟 `/inferspec-refine` 會在 v0.2 推出。
+**v0.2 alpha**。提供 `/inferspec-scan`（bulk 模式）+ `/inferspec-cap`（互動式
+單 cap 模式）。`/inferspec-refine` 視 v0.3 評估。
 
 ## License
 
