@@ -47,6 +47,7 @@ def test_uninstall_removes_skills_and_block(tmp_path: Path):
 
         p = get_platform("claude-code")
         assert not (Path.cwd() / p.skills_path / "inferspec-scan").exists()
+        assert not (Path.cwd() / p.skills_path / "inferspec-cap").exists()
         config = Path.cwd() / p.config_file
         if config.exists():
             assert START_MARKER not in config.read_text()
@@ -59,3 +60,6 @@ def test_doctor_reports_status(tmp_path: Path):
         result = runner.invoke(cli, ["doctor"])
         assert result.exit_code == 0
         assert "claude-code" in result.output.lower()
+        # Both skills should be reported
+        assert "scan=" in result.output.lower()
+        assert "cap=" in result.output.lower()

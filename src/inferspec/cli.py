@@ -93,12 +93,17 @@ def doctor():
         if p is None:
             console.print(f"  [red]✗[/red] {pid}: unknown platform id")
             continue
-        skill = project_dir / p.skills_path / "inferspec-scan" / "SKILL.md"
+        scan_skill = project_dir / p.skills_path / "inferspec-scan" / "SKILL.md"
+        cap_skill = project_dir / p.skills_path / "inferspec-cap" / "SKILL.md"
         config = project_dir / p.config_file
-        skill_ok = skill.exists()
+        scan_ok = scan_skill.exists()
+        cap_ok = cap_skill.exists()
         block_ok = config.exists() and START_MARKER in config.read_text()
-        mark = "[green]✓[/green]" if skill_ok and block_ok else "[red]✗[/red]"
-        console.print(f"  {mark} {p.name} ({p.id}): skill={skill_ok} block={block_ok}")
+        all_ok = scan_ok and cap_ok and block_ok
+        mark = "[green]✓[/green]" if all_ok else "[red]✗[/red]"
+        console.print(
+            f"  {mark} {p.name} ({p.id}): scan={scan_ok} cap={cap_ok} block={block_ok}"
+        )
 
 
 @cli.command()
@@ -118,9 +123,10 @@ def uninstall(yes: bool):
         p = get_platform(pid)
         if p is None:
             continue
-        skill_dir = project_dir / p.skills_path / "inferspec-scan"
-        if skill_dir.exists():
-            shutil.rmtree(skill_dir)
+        for skill_name in ("inferspec-scan", "inferspec-cap"):
+            skill_dir = project_dir / p.skills_path / skill_name
+            if skill_dir.exists():
+                shutil.rmtree(skill_dir)
         config = project_dir / p.config_file
         if config.exists():
             text = config.read_text()

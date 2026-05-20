@@ -17,6 +17,7 @@ def _managed_block_content() -> str:
         "This repo has InferSpec skills installed. Available slash commands:\n"
         "\n"
         "- `/inferspec-scan` — bulk-infer OpenSpec specs from code + git + docs\n"
+        "- `/inferspec-cap <slug>` — single-cap deep-dive with interactive Q&A\n"
         "\n"
         "Specs are written to `openspec/specs/<cap>/spec.md`.\n"
         "See https://github.com/anrylu/infer-spec for docs.\n"
