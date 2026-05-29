@@ -6,9 +6,12 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 
-from inferspec.installer import install_platform
+from inferspec import __version__
+from inferspec.installer import install_platform, read_installed_version
 from inferspec.managed_block import START_MARKER, END_MARKER
 from inferspec.platforms import PLATFORMS, get_platform, get_platforms_by_ids
+
+SKILL_NAMES = ("inferspec-scan", "inferspec-cap")
 
 console = Console()
 CONFIG_FILE = ".inferspec.yaml"
@@ -88,22 +91,78 @@ def doctor():
         return
 
     project_dir = Path.cwd()
+    stale = False
     for pid in cfg.get("platforms", []):
         p = get_platform(pid)
         if p is None:
             console.print(f"  [red]✗[/red] {pid}: unknown platform id")
             continue
-        scan_skill = project_dir / p.skills_path / "inferspec-scan" / "SKILL.md"
-        cap_skill = project_dir / p.skills_path / "inferspec-cap" / "SKILL.md"
+        skill_root = project_dir / p.skills_path
+        scan_ok = (skill_root / "inferspec-scan" / "SKILL.md").exists()
+        cap_ok = (skill_root / "inferspec-cap" / "SKILL.md").exists()
         config = project_dir / p.config_file
-        scan_ok = scan_skill.exists()
-        cap_ok = cap_skill.exists()
         block_ok = config.exists() and START_MARKER in config.read_text()
-        all_ok = scan_ok and cap_ok and block_ok
+
+        versions = {n: read_installed_version(skill_root / n) for n in SKILL_NAMES}
+        drift = [n for n, v in versions.items() if v and v != __version__]
+        if drift:
+            stale = True
+        all_ok = scan_ok and cap_ok and block_ok and not drift
         mark = "[green]✓[/green]" if all_ok else "[red]✗[/red]"
+
+        ver_parts = []
+        for n in SKILL_NAMES:
+            v = versions[n] or "?"
+            tag = "[yellow]stale[/yellow]" if v != __version__ and v != "?" else ""
+            ver_parts.append(f"{n.split('-')[1]}={v}{(' ' + tag) if tag else ''}")
         console.print(
-            f"  {mark} {p.name} ({p.id}): scan={scan_ok} cap={cap_ok} block={block_ok}"
+            f"  {mark} {p.name} ({p.id}): {' '.join(ver_parts)} block={block_ok}"
         )
+
+    console.print(f"\n  package: [cyan]inferspec v{__version__}[/cyan]")
+    if stale:
+        console.print("  [yellow]⚠ Skill bundles are out of date. Run `inferspec update`.[/yellow]")
+
+
+@cli.command()
+@click.option("--check", is_flag=True, help="Report drift without writing anything.")
+def update(check: bool):
+    """Refresh installed skill bundles to match the current package version."""
+    cfg = _load_config()
+    if cfg is None:
+        console.print("[yellow]No .inferspec.yaml found. Run `inferspec init` first.[/yellow]")
+        raise SystemExit(1)
+
+    project_dir = Path.cwd()
+    pids = cfg.get("platforms", [])
+    selected = get_platforms_by_ids(pids)
+    if not selected:
+        console.print("[red]No valid platforms in .inferspec.yaml.[/red]")
+        raise SystemExit(1)
+
+    if check:
+        drift_found = False
+        for p in selected:
+            for skill_name in SKILL_NAMES:
+                installed = read_installed_version(project_dir / p.skills_path / skill_name)
+                state = installed or "missing"
+                if state != __version__:
+                    drift_found = True
+                    console.print(
+                        f"  [yellow]⚠[/yellow] {p.name} / {skill_name}: {state} → {__version__}"
+                    )
+                else:
+                    console.print(f"  [green]✓[/green] {p.name} / {skill_name}: {installed}")
+        if drift_found:
+            console.print("\n[yellow]Run `inferspec update` to apply.[/yellow]")
+            raise SystemExit(1)
+        console.print(f"\n[green]✅[/green] All bundles match package v{__version__}.")
+        return
+
+    for p in selected:
+        install_platform(project_dir, p)
+        console.print(f"  [green]✅[/green] {p.name} → v{__version__}")
+    console.print(f"\n[green]✅[/green] Updated {len(selected)} platform(s) to v{__version__}.\n")
 
 
 @cli.command()
@@ -123,7 +182,7 @@ def uninstall(yes: bool):
         p = get_platform(pid)
         if p is None:
             continue
-        for skill_name in ("inferspec-scan", "inferspec-cap"):
+        for skill_name in SKILL_NAMES:
             skill_dir = project_dir / p.skills_path / skill_name
             if skill_dir.exists():
                 shutil.rmtree(skill_dir)

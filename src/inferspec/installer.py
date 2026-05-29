@@ -2,12 +2,22 @@ import importlib.resources
 import shutil
 from pathlib import Path
 
+from inferspec import __version__
 from inferspec.managed_block import write_block
 from inferspec.platforms import Platform
+
+VERSION_STAMP = ".inferspec-version"
 
 
 def _bundled_skills_dir() -> Path:
     return Path(str(importlib.resources.files("inferspec") / "skills"))
+
+
+def read_installed_version(skill_dir: Path) -> str | None:
+    stamp = skill_dir / VERSION_STAMP
+    if not stamp.exists():
+        return None
+    return stamp.read_text().strip() or None
 
 
 def _managed_block_content() -> str:
@@ -34,6 +44,7 @@ def install_platform(project_dir: Path, platform: Platform) -> None:
         if dest.exists():
             shutil.rmtree(dest)
         shutil.copytree(skill_dir, dest)
+        (dest / VERSION_STAMP).write_text(__version__ + "\n")
 
     config_file = project_dir / platform.config_file
     config_file.parent.mkdir(parents=True, exist_ok=True)

@@ -2,7 +2,9 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from inferspec import __version__
 from inferspec.cli import cli
+from inferspec.installer import VERSION_STAMP
 from inferspec.platforms import get_platform
 from inferspec.managed_block import START_MARKER
 
@@ -63,3 +65,62 @@ def test_doctor_reports_status(tmp_path: Path):
         # Both skills should be reported
         assert "scan=" in result.output.lower()
         assert "cap=" in result.output.lower()
+        assert __version__ in result.output
+
+
+def test_doctor_flags_stale_bundles(tmp_path: Path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=tmp_path):
+        runner.invoke(cli, ["init", "--platform", "claude-code"])
+        p = get_platform("claude-code")
+        stamp = Path.cwd() / p.skills_path / "inferspec-scan" / VERSION_STAMP
+        stamp.write_text("0.0.1-old\n")
+        result = runner.invoke(cli, ["doctor"])
+        assert result.exit_code == 0
+        assert "stale" in result.output.lower()
+        assert "inferspec update" in result.output
+
+
+def test_update_refreshes_bundles(tmp_path: Path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=tmp_path):
+        runner.invoke(cli, ["init", "--platform", "claude-code"])
+        p = get_platform("claude-code")
+        stamp = Path.cwd() / p.skills_path / "inferspec-scan" / VERSION_STAMP
+        stamp.write_text("0.0.1-old\n")
+
+        result = runner.invoke(cli, ["update"])
+        assert result.exit_code == 0, result.output
+        assert stamp.read_text().strip() == __version__
+
+
+def test_update_check_reports_drift_without_writing(tmp_path: Path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=tmp_path):
+        runner.invoke(cli, ["init", "--platform", "claude-code"])
+        p = get_platform("claude-code")
+        stamp = Path.cwd() / p.skills_path / "inferspec-scan" / VERSION_STAMP
+        stamp.write_text("0.0.1-old\n")
+
+        result = runner.invoke(cli, ["update", "--check"])
+        assert result.exit_code == 1
+        assert "0.0.1-old" in result.output
+        # Should NOT have refreshed the stamp
+        assert stamp.read_text().strip() == "0.0.1-old"
+
+
+def test_update_check_passes_when_in_sync(tmp_path: Path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=tmp_path):
+        runner.invoke(cli, ["init", "--platform", "claude-code"])
+        result = runner.invoke(cli, ["update", "--check"])
+        assert result.exit_code == 0
+        assert __version__ in result.output
+
+
+def test_update_fails_without_config(tmp_path: Path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=tmp_path):
+        result = runner.invoke(cli, ["update"])
+        assert result.exit_code == 1
+        assert ".inferspec.yaml" in result.output

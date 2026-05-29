@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from inferspec.installer import install_platform
+from inferspec import __version__
+from inferspec.installer import VERSION_STAMP, install_platform, read_installed_version
 from inferspec.platforms import get_platform
 from inferspec.managed_block import START_MARKER
 
@@ -88,3 +89,21 @@ def test_installed_cap_skill_has_required_files(tmp_path: Path):
     assert "name: inferspec-cap" in skill_text
     assert "[GAP]" in skill_text
     assert "commit" in skill_text.lower()
+
+
+def test_install_stamps_version(tmp_path: Path):
+    p = get_platform("claude-code")
+    install_platform(tmp_path, p)
+    for skill_name in ("inferspec-scan", "inferspec-cap"):
+        stamp = tmp_path / p.skills_path / skill_name / VERSION_STAMP
+        assert stamp.exists()
+        assert stamp.read_text().strip() == __version__
+
+
+def test_read_installed_version_returns_none_when_missing(tmp_path: Path):
+    assert read_installed_version(tmp_path) is None
+
+
+def test_read_installed_version_reads_stamp(tmp_path: Path):
+    (tmp_path / VERSION_STAMP).write_text("9.9.9\n")
+    assert read_installed_version(tmp_path) == "9.9.9"
