@@ -8,12 +8,30 @@ designed for legacy code that has no spec.
 [![CI](https://github.com/anrylu/infer-spec/actions/workflows/ci.yml/badge.svg)](https://github.com/anrylu/infer-spec/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **From Code & Context to Clear Specs**
+> **Development-Driven Spec (DDS)** — the inverse of Spec-Driven Development.
+> From Code & Context to Clear Specs.
+
+## SDD vs DDS
+
+[Spec-Driven Development (SDD)](https://github.com/Fission-AI/OpenSpec) is the
+discipline of writing the spec first, then implementing against it. It works
+beautifully on greenfield projects.
+
+**The real world is mostly brownfield.** You inherit a 50K-line Flask service.
+There is no spec — just a Jira board from three years ago, a Confluence wiki
+nobody updates, and the git log. SDD has no entry point here.
+
+**InferSpec inverts the loop: Development-Driven Spec (DDS).** Code already
+exists; treat it (plus git history, tickets, docs, MCP-attached wikis) as the
+source of truth and *reverse-infer* a structured OpenSpec spec from it. Once
+the spec exists, you can switch back to SDD for new work.
+
+| Mode | Starting point | Output |
+|------|----------------|--------|
+| **SDD** (Spec-Driven Development) | A spec | Code |
+| **DDS** (Development-Driven Spec) | Code + history + docs | A spec |
 
 ## Why InferSpec?
-
-You inherit a 50K-line Flask service. There is no spec. There is a Jira board
-from three years ago, a Confluence wiki nobody updates, and the git log.
 
 **InferSpec reads all of it** and produces a structured OpenSpec spec — one
 `spec.md` per capability — with each Requirement cited back to `file:line` or
@@ -44,8 +62,24 @@ endpoints to configure.
 uvx inferspec init --platform claude-code
 ```
 
-That drops `/inferspec-scan` into `.claude/skills/` for the current directory.
-See `inferspec platforms` for the full list.
+That drops `/inferspec-scan` + `/inferspec-cap` into `.claude/skills/` for the
+current directory. See `inferspec platforms` for the full list.
+
+### Updating
+
+When a new version of the `inferspec` package ships, the bundled skill files
+inside each repo's `.claude/skills/` (or equivalent) stay frozen at the version
+that was installed. Refresh them with:
+
+```bash
+pip install -U inferspec        # or: uvx --refresh inferspec ...
+inferspec update                # in each repo where you ran `inferspec init`
+```
+
+`inferspec update` reads `.inferspec.yaml` to find the platforms you previously
+installed into, then re-copies the bundled skills (no prompts). Use
+`inferspec update --check` to report drift without writing anything, or
+`inferspec doctor` to see the installed-vs-package version per platform.
 
 ## Usage
 
@@ -103,9 +137,13 @@ The system SHALL reject login attempts after 5 failures within 60 seconds.
 
 ## Status
 
-**v0.2 alpha.** Ships `/inferspec-scan` (bulk mode) + `/inferspec-cap`
-(interactive single-cap mode). `/inferspec-refine` is under evaluation for
-v0.3.
+**v0.3 alpha.** Ships:
+- `/inferspec-scan` — bulk mode, plus design-doc auto-discovery, OpenAPI/Swagger
+  detection, `--since <rev>` incremental scan, glossary enforcement
+  (`.inferspec-glossary.txt`), and removal proposals under `openspec/changes/`
+- `/inferspec-cap <slug>` — interactive single-cap mode, also covers iterative
+  gap-fill on existing specs
+- `inferspec update` — refresh installed skill bundles per repo
 
 ## License
 
