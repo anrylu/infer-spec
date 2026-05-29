@@ -4,13 +4,34 @@ build-backend = "hatchling.build"
 
 [project]
 name = "inferspec"
-version = "0.2.0a0"
-description = "Reverse-infer OpenSpec specs from code + multi-source context"
+version = "0.3.0a0"
+description = "Development-Driven Spec (DDS) — reverse-infer OpenSpec specs from code + git history + docs. The inverse of SDD, for brownfield repos."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
 authors = [{ name = "anrylu" }]
-keywords = ["spec", "openspec", "ai", "agent", "claude", "gemini", "copilot", "legacy-code"]
+keywords = [
+    "spec",
+    "openspec",
+    "spec-driven-development",
+    "sdd",
+    "dds",
+    "development-driven-spec",
+    "reverse-engineering",
+    "brownfield",
+    "legacy-code",
+    "documentation-generator",
+    "ai",
+    "agent",
+    "agentic",
+    "claude",
+    "claude-code",
+    "claude-skill",
+    "gemini",
+    "copilot",
+    "codex",
+    "mcp",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
