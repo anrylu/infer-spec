@@ -57,3 +57,10 @@ RULES:
 - Don't repeat code in the spec — describe behaviour observable from outside.
 - Don't write Requirements for purely internal helpers — those belong to whatever
   external-facing Requirement uses them.
+
+GLOSSARY (do-not-translate):
+If a `Glossary:` block was provided in the input, every listed term MUST appear
+verbatim in the output — same casing, same punctuation, no expansion, no
+translation. Examples of typical glossary terms: product names, internal
+acronyms, canonical service names. If a Requirement would naturally translate
+or paraphrase such a term, keep the term as-is and rephrase around it.
